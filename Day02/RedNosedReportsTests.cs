@@ -21,14 +21,14 @@ public class RedNosedReportsTests
     {
         string[] data =
         [
-            //"22 25 27 28 30 31 32 29",  // true
-            //"72 74 75 77 80 81 81",     // true
+            "22 25 27 28 30 31 32 29",  // true
+            "72 74 75 77 80 81 81",     // true
             "52 53 55 58 59 63",        // true
             "14 17 19 22 27",           // true
-            //"65 68 67 68 71 73 76 77",  // true
-            //"53 56 53 55 54",           // false
-            //"60 62 59 62 62",           // false
-            // "27 30 28 31 32 35 39",     // false
+            "65 68 67 68 71 73 76 77",  // false (take 67 away, leaves 68 & 68 together)
+            "53 56 53 55 54",           // false
+            "60 62 59 62 62",           // false
+            "27 30 28 31 32 35 39",     // false
             // "64 67 68 71 74 71 74 81",  // false
             // "29 32 32 33 36 39 40",     // true
             // "72 74 74 75 74",           // false
@@ -70,18 +70,9 @@ public class RedNosedReportsTests
             // "47 46 48 49 54 57 57",     // false
         ];
 
-        /*
-            The answer is not:
-                657 (too low)
-                658
-                659
-                664
-                723
-        */
-
         var answer = new RedNosedReports(data).GetAnswerForPart(ChallengePart.Part2);
         
-        Assert.Equal(2, answer);
+        Assert.Equal(4, answer);
     }
 
     [Theory]
@@ -93,6 +84,7 @@ public class RedNosedReportsTests
     [InlineData("1 3 6 7 9", true)]
     [InlineData("53 56 53 55 54", false)]
     [InlineData("52 53 55 58 59 63", true)]
+    [InlineData("27 30 28 31 32 35 39", false)]
     public void IndividualRowPart2(string row, bool isSafe)
     {
         string[] data = [row];
@@ -101,5 +93,23 @@ public class RedNosedReportsTests
         var answer = sut.GetAnswerForPart(ChallengePart.Part2);
 
         Assert.Equal(isSafe, answer == 1);
+    }
+    
+    [Theory]
+    [InlineData(654)]
+    [InlineData(657)]
+    [InlineData(658)]
+    [InlineData(659)]
+    [InlineData(664)]
+    [InlineData(723)]
+    [InlineData(857)]
+    [InlineData(904)]
+    public void Part2IsNot(int incorrectAnswer)
+    {
+        var data = ChallengeDataReader.GetDataForDay(2, InputTypes.Example);
+        
+        var answer = new RedNosedReports(data).GetAnswerForPart(ChallengePart.Part2);
+        
+        Assert.NotEqual(incorrectAnswer, answer);
     }
 }

@@ -19,10 +19,18 @@ public class RedNosedReports(string[] data) : ChallengeBase<int>(data)
     private static List<Level> GetLevelStatus(int[] levels)
     {
         var levelDiffs = new List<Level>();
-            
-        var isIncreasing = levels[0] < levels[1];
 
-        levelDiffs.Add(new Level(levels[0], isIncreasing ? IsSafe(levels[1], levels[0]) : IsSafe(levels[0], levels[1])));
+        if (levels.Length == 0) return [];
+        if (levels.Length == 1) return [new(levels[0], false)];
+        
+        var isIncreasing = levels[^1] == levels[0] 
+            ? levels[^1] > levels[1] 
+            : levels[^1] > levels[0];
+
+        var isFirstValueSafe = isIncreasing 
+            ? IsSafe(levels[1], levels[0]) 
+            : IsSafe(levels[0], levels[1]);
+        levelDiffs.Add(new Level(levels[0], isFirstValueSafe));
 
         for (var i = 1; i < levels.Length; i++)
         {
@@ -55,8 +63,6 @@ public class RedNosedReports(string[] data) : ChallengeBase<int>(data)
         foreach (var report in ChallengeDataRows)
         {
             var levels = report.Split(" ").Select(int.Parse).ToArray();
-            var len = levels.Length;
-            var diffs = new List<(bool, int)>();
 
             var levelStatus = GetLevelStatus(levels);
 
@@ -66,7 +72,7 @@ public class RedNosedReports(string[] data) : ChallengeBase<int>(data)
             }
             else if (levelStatus.Count(x => x.IsSafe == false) == 1)
             {
-                var okLevels = levelStatus.Where(x => x.IsSafe == true).Select(x => x.Value).ToArray();
+                var okLevels = levelStatus.Where(x => x.IsSafe).Select(x => x.Value).ToArray();
 
                 var newStatuses = GetLevelStatus(okLevels);
 
