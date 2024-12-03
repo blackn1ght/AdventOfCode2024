@@ -9,33 +9,44 @@ public class RedNosedReports(string[] data) : ChallengeBase<int>(data)
         foreach (var report in ChallengeDataRows)
         {
             var levels = report.Split(" ").Select(int.Parse).ToArray();
-            var levelDiffs = new List<bool>();
-            
-            var isIncreasing = levels[0] < levels[1];
-            for (var i = 0; i < levels.Length - 1; i++)
-            {
-                var isSafe = false;
-                if (levels[i] == levels[i + 1])
-                {
-                    isSafe = false;
-                }
-                else if (isIncreasing)
-                {
-                    isSafe = (levels[i + 1] - levels[i]) is <= 3 and > 0;
-                }
-                else if (!isIncreasing)
-                {
-                    isSafe = (levels[i] - levels[i + 1]) is <= 3 and > 0;
-                }
-                
-                levelDiffs.Add(isSafe);
-            }
 
-            answer += levelDiffs.All(x => x) ? 1 : 0;
+            answer += GetLevelStatus(levels).All(x => x.IsSafe) ? 1 : 0;
         }
         
         return answer;
     }
+
+    private static List<Level> GetLevelStatus(int[] levels)
+    {
+        var levelDiffs = new List<Level>();
+            
+        var isIncreasing = levels[0] < levels[1];
+
+        levelDiffs.Add(new Level(levels[0], isIncreasing ? IsSafe(levels[1], levels[0]) : IsSafe(levels[0], levels[1])));
+
+        for (var i = 1; i < levels.Length; i++)
+        {
+            var isSafe = false;
+            if (levels[i - 1] == levels[i])
+            {
+                isSafe = false;
+            }
+            else if (isIncreasing)
+            {
+                isSafe = IsSafe(levels[i], levels[i-1]);
+            }
+            else if (!isIncreasing)
+            {
+                isSafe = IsSafe(levels[i-1], levels[i]);
+            }
+                
+            levelDiffs.Add(new (levels[i], isSafe));
+        }
+
+        return levelDiffs;
+    }
+
+    private static bool IsSafe(int val0, int val1) => (val0 - val1) is <= 3 and > 0;
 
     protected override int Part2()
     {
@@ -44,36 +55,27 @@ public class RedNosedReports(string[] data) : ChallengeBase<int>(data)
         foreach (var report in ChallengeDataRows)
         {
             var levels = report.Split(" ").Select(int.Parse).ToArray();
+            var len = levels.Length;
             var diffs = new List<(bool, int)>();
 
-            for (var i = 0; i < levels.Length - 1; i++)
-            {
-                diffs.Add((levels[i + 1] - levels[i] is <= 3 and > 0, levels[i]));
-            }
-            
-            /*
-            List<int> levelDiffs = [levels[1] - levels[0]];
+            var levelStatus = GetLevelStatus(levels);
 
-
-            for (var i = 1; i < levels.Length - 1; i++)
+            if (levelStatus.All(x => x.IsSafe))
             {
-                levelDiffs.Add(levels[i+1] - levels[i]);
+                safeReports++;
             }
-
-            // invert the numbers if negatives
-            if (levelDiffs.Sum() < 0)
+            else if (levelStatus.Count(x => x.IsSafe == false) == 1)
             {
-                levelDiffs = levelDiffs.Select(n => n * -1).ToList();
-            }
+                var okLevels = levelStatus.Where(x => x.IsSafe == true).Select(x => x.Value).ToArray();
 
-            if (levelDiffs.All(n => n <= 3) && levelDiffs.Count(n => n < 1) <= 1)
-            {
-                safeReports += 1;
+                var newStatuses = GetLevelStatus(okLevels);
+
+                safeReports += newStatuses.All(x => x.IsSafe) ? 1 : 0;
             }
-            */
-   
         }
         
         return safeReports;
     }
 }
+
+public record Level(int Value, bool IsSafe);
