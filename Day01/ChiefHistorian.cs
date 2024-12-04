@@ -1,6 +1,6 @@
 ﻿namespace AdventOfCode2024.Day01;
 
-public class ChiefHistorian(string[] data) : ChallengeBase<int>(data)
+public class ChiefHistorian(string[] data) : ChallengeBase<int>
 {
     protected override int Part1()
     {
@@ -45,7 +45,7 @@ public class ChiefHistorian(string[] data) : ChallengeBase<int>(data)
     {
         List<int> col1 = [];
         List<int> col2 = [];
-        foreach (var line in ChallengeDataRows)
+        foreach (var line in data)
         {
             var numbers = line.Split("   ").Select(int.Parse).ToArray();
             col1.Add(numbers[0]);

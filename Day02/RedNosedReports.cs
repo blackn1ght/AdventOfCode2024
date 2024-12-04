@@ -1,12 +1,12 @@
 ﻿namespace AdventOfCode2024.Day02;
 
-public class RedNosedReports(string[] data) : ChallengeBase<int>(data)
+public class RedNosedReports(string[] data) : ChallengeBase<int>
 {
     protected override int Part1()
     {
         var answer = 0;
 
-        foreach (var report in ChallengeDataRows)
+        foreach (var report in data)
         {
             var levels = report.Split(" ").Select(int.Parse).ToArray();
 
@@ -60,7 +60,7 @@ public class RedNosedReports(string[] data) : ChallengeBase<int>(data)
     {
         var safeReports = 0;
 
-        foreach (var report in ChallengeDataRows)
+        foreach (var report in data)
         {
             var levels = report.Split(" ").Select(int.Parse).ToArray();
 

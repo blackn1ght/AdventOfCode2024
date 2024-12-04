@@ -1,9 +1,8 @@
-﻿using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace AdventOfCode2024.Day03;
 
-public class MullItOver(string[] data) : ChallengeBase<int>(data)
+public class MullItOver(string[] data) : ChallengeBase<int>
 {
     private const string MulRegex = @"mul\((\d*),(\d*)\)";
     private const string DoToken = "do()";

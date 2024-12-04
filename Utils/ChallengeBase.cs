@@ -2,13 +2,6 @@ namespace AdventOfCode2024.Utils;
 
 public abstract class ChallengeBase<T>
 {
-    protected readonly string[] ChallengeDataRows;
-
-    public ChallengeBase(string[] data)
-    {
-        ChallengeDataRows = data;
-    }
-
     public T GetAnswerForPart(ChallengePart part)
         => part switch
         {
