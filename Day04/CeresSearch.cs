@@ -1,18 +1,4 @@
-using Microsoft.VisualStudio.TestPlatform.Common.DataCollection;
-
 namespace AdventOfCode2024.Day04;
-
-public enum GridDirection
-{
-    North,
-    NorthEast,
-    East,
-    SouthEast,
-    South,
-    SouthWest,
-    West,
-    NorthWest
-}
 
 public class CeresSearch(string[] data) : ChallengeBase<int>
 {
@@ -22,118 +8,140 @@ public class CeresSearch(string[] data) : ChallengeBase<int>
 
         for (var y = 0; y < data.Length; y++)
         {
-            // Find positions of x
             answer += data[y]
                 .Select((c, xIndex) => c == 'X' ? xIndex : -1)
                 .Where(x => x > -1)
-                .Sum(x => HasXmasLine(y, x, ['M', 'A', 'S'], []));
+                .Sum(x => GetNumberOfXmasFromPoint(y, x));
         }
 
         return answer;
     }
 
-    protected override int Part2() => 0;
-
-    private int HasXmasLine(int y, int x, char[] remainingChars, List<(int y, int x)> previousCoordinates, GridDirection? directionOfTravel = null)
+    protected override int Part2()
     {
-        previousCoordinates.Add((y, x));
-        if (remainingChars.Length == 0)
+        var answer = 0;
+
+        for (var y = 1; y < data.Length - 1; y++)
         {
-            Console.WriteLine($"Line: {string.Join(", ", previousCoordinates)}");
-            return 1;
+            answer += data[y]
+                .Select((c, x) => c == 'A' && x > 0 && x < data[y].Length - 1 ? x : -1)
+                .Where(x => x > -1)
+                .Count(x => HasXmasShapeFromPointA(y, x));
         }
+
+        return answer;
+    }
+
+    private bool HasXmasShapeFromPointA(int y, int x)
+    {
+        /*
+         * M S  S S  M M  S M
+         *  A    A    A    A
+         * M S  M M  S S  S M
+         */
+
+        var nw = data[y - 1][x - 1];
+        var ne = data[y - 1][x + 1];
+        var sw = data[y + 1][x - 1];
+        var se = data[y + 1][x + 1];
+
+        return (nw) switch
+        {
+            'M' when sw == 'M' && ne == 'S' && se == 'S' => true,
+            'S' when sw == 'M' && ne == 'S' && se == 'M' => true,
+            'M' when sw == 'S' && ne == 'M' && se == 'S' => true,
+            'S' when sw == 'S' && ne == 'M' && se == 'M' => true,
+            _ => false
+        };
+    }
+
+    private int GetNumberOfXmasFromPoint(int y, int x)
+    {
+        var minY = y > 0 ? y - 1 : 0;
+        var maxY = y < data.Length - 2 ? y + 1 : y;
+        var minX = x > 0 ? x - 1 : 0;
+        var maxX = x < data[0].Length - 2 ? x + 1 : x;
+
+        var count = 0;
+        
+        for (var yPos = minY; yPos <= maxY; yPos++)
+        {
+            for (var xPos = minX; xPos <= maxX; xPos++)
+            {
+                if (data[yPos][xPos] == 'M' && (y == yPos && x == xPos) == false)
+                {
+                    var directionOfTravel = GetDirection(x, y, xPos, yPos);
+                    if (HasXmasLine(yPos, xPos, ['A', 'S'], directionOfTravel)) count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
+    private bool HasXmasLine(int y, int x, char[] remainingChars, GridDirection directionOfTravel)
+    {
+        if (remainingChars.Length == 0) return true;
 
         var nextChar = remainingChars[0];
         remainingChars = remainingChars.Skip(1).ToArray();
-
-        if (directionOfTravel is null)
+        
+        if (directionOfTravel == GridDirection.North && IsInBounds(y - 1, x) && data[y - 1][x] == nextChar) 
         {
-            var minY = y > 0 ? y -1 : 0;
-            var maxY = y < data.Length - 2 ? y + 1 : y;
-            var minX = x > 0 ? x - 1 : 0;
-            var maxX = x < data[0].Length - 2 ? x + 1 : x;
-
-            List<int> results = [];
-
-            for (var yPos = minY; y <= maxY; yPos++)
-            {
-                for (var xPos = minX; xPos <= maxX; xPos++)
-                {
-                    if (IsInBounds(yPos, xPos) && data[yPos][xPos] == nextChar && (y == yPos && x == xPos) == false)
-                    {
-                        directionOfTravel = GetDirection(x, y, xPos, yPos);
-                        var newPreviousCoordinates = new List<(int y, int x)>();
-                        newPreviousCoordinates.Add((y, x));
-                        var result = HasXmasLine(yPos, xPos, remainingChars, newPreviousCoordinates, directionOfTravel);
-                        results.Add(result);
-                    }
-                }
-            }
-
-            return results.Sum();
-        }
-        else
-        {
-            if (directionOfTravel == GridDirection.North && IsInBounds(y - 1, x) && data[y - 1][x] == nextChar) 
-            {
-                return HasXmasLine(y - 1, x, remainingChars, previousCoordinates, directionOfTravel);
-            }
-
-            if (directionOfTravel == GridDirection.East && IsInBounds(y, x + 1) && data[y][x + 1] == nextChar) 
-            {
-                return HasXmasLine(y, x + 1, remainingChars, previousCoordinates, directionOfTravel);
-            }
-
-            if (directionOfTravel == GridDirection.South && IsInBounds(y + 1, x) && data[y + 1][x] == nextChar)
-            {
-                return HasXmasLine(y + 1, x, remainingChars, previousCoordinates, directionOfTravel);
-            }
-
-            if (directionOfTravel == GridDirection.West && IsInBounds(y, x - 1) && data[y][x - 1] == nextChar)
-            {
-                return HasXmasLine(y, x - 1, remainingChars, previousCoordinates, directionOfTravel);
-            }
-
-            if (directionOfTravel == GridDirection.NorthEast && IsInBounds(y - 1, x + 1) && data[y - 1][x + 1] == nextChar)
-            {
-                return HasXmasLine(y - 1, x + 1, remainingChars, previousCoordinates, directionOfTravel);
-            }
-
-            if (directionOfTravel == GridDirection.SouthEast && IsInBounds(y + 1, x + 1) && data[y + 1][x + 1] == nextChar)
-            {
-                return HasXmasLine(y + 1, x + 1, remainingChars, previousCoordinates, directionOfTravel);
-            }
-
-            if (directionOfTravel == GridDirection.SouthWest && IsInBounds(y + 1, x - 1) && data[y + 1][x - 1] == nextChar)
-            {
-                return HasXmasLine(y + 1, x - 1, remainingChars, previousCoordinates, directionOfTravel);
-            }
-
-            if (directionOfTravel == GridDirection.NorthWest && IsInBounds(y - 1, x - 1) && data[y - 1][x - 1] == nextChar)
-            {
-                return HasXmasLine(y - 1, x - 1, remainingChars, previousCoordinates, directionOfTravel);
-            }
+            return HasXmasLine(y - 1, x, remainingChars, directionOfTravel);
         }
 
-        return 0;
+        if (directionOfTravel == GridDirection.East && IsInBounds(y, x + 1) && data[y][x + 1] == nextChar) 
+        {
+            return HasXmasLine(y, x + 1, remainingChars, directionOfTravel);
+        }
+
+        if (directionOfTravel == GridDirection.South && IsInBounds(y + 1, x) && data[y + 1][x] == nextChar)
+        {
+            return HasXmasLine(y + 1, x, remainingChars, directionOfTravel);
+        }
+
+        if (directionOfTravel == GridDirection.West && IsInBounds(y, x - 1) && data[y][x - 1] == nextChar)
+        {
+            return HasXmasLine(y, x - 1, remainingChars, directionOfTravel);
+        }
+
+        if (directionOfTravel == GridDirection.NorthEast && IsInBounds(y - 1, x + 1) && data[y - 1][x + 1] == nextChar)
+        {
+            return HasXmasLine(y - 1, x + 1, remainingChars, directionOfTravel);
+        }
+
+        if (directionOfTravel == GridDirection.SouthEast && IsInBounds(y + 1, x + 1) && data[y + 1][x + 1] == nextChar)
+        {
+            return HasXmasLine(y + 1, x + 1, remainingChars, directionOfTravel);
+        }
+
+        if (directionOfTravel == GridDirection.SouthWest && IsInBounds(y + 1, x - 1) && data[y + 1][x - 1] == nextChar)
+        {
+            return HasXmasLine(y + 1, x - 1, remainingChars, directionOfTravel);
+        }
+
+        if (directionOfTravel == GridDirection.NorthWest && IsInBounds(y - 1, x - 1) && data[y - 1][x - 1] == nextChar)
+        {
+            return HasXmasLine(y - 1, x - 1, remainingChars, directionOfTravel);
+        }
+
+        return false;
     }
 
     private bool IsInBounds(int y, int x)
         => (y < 0 || x < 0 || y >= data.Length || x >= data[0].Length) == false;
     
-
-    private static GridDirection? GetDirection(int currX, int currY, int x, int y)
+    private static GridDirection GetDirection(int currX, int currY, int x, int y)
     {
         if (x == currX)
         {
-            // on the same column
             if ((currY - 1) == y) return GridDirection.North;
             if ((currY + 1) == y) return GridDirection.South;
         }
 
         if (y == currY)
         {
-            // on the same row
             if ((currX - 1) == x) return GridDirection.West;
             if ((currX + 1) == x) return GridDirection.East;
         }
@@ -150,23 +158,6 @@ public class CeresSearch(string[] data) : ChallengeBase<int>
             if (y == (currY - 1)) return GridDirection.NorthWest;
         }
 
-        return null;
-    }
-}
-
-public class CeresSearchTests
-{
-    [Theory]
-    [InlineData(ChallengePart.Part1, InputTypes.Example, 18)]
-    [InlineData(ChallengePart.Part1, InputTypes.Input, 0)]
-    [InlineData(ChallengePart.Part2, InputTypes.Example, 0)]
-    [InlineData(ChallengePart.Part2, InputTypes.Input, 0)]
-    public void ChallengeShouldGiveCorrectAnswers(ChallengePart challengePart, InputTypes inputType, int expectedAnswer)
-    {
-        var data = ChallengeDataReader.GetDataForDay(4, inputType);
-        
-        var answer = new CeresSearch(data).GetAnswerForPart(challengePart);
-        
-        Assert.Equal(expectedAnswer, answer);
+        throw new InvalidOperationException($"Unable to work out direction for {x},{y} to {currX},{currY}");
     }
 }
