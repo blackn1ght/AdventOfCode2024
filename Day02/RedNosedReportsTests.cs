@@ -16,21 +16,34 @@ public class RedNosedReportsTests
         Assert.Equal(expectedAnswer, answer);
     }
 
-    [Fact]
-    public void ICannotDoPart2()
+    public static IEnumerable<object[]> UnsuafeRows()
+    {
+        yield return ["65 68 67 68 71 73 76 77"];
+        yield return ["53 56 53 55 54"];
+        yield return ["60 62 59 62 62"];
+        yield return ["27 30 28 31 32 35 39"];
+        yield return ["64 67 68 71 74 71 74 81"];
+    }
+
+    public static IEnumerable<object[]> SafeRows()
+    {
+        // yield return ["22 25 27 28 30 31 32 29"];
+        // yield return ["72 74 75 77 80 81 81"];
+        // yield return ["52 53 55 58 59 63"];
+        // yield return ["14 17 19 22 27"];
+        // yield return ["29 32 32 33 36 39 40"];
+        yield return ["63 62 65 66 69 70 72"];
+        yield return ["5 3 4 6 8 10"];
+        yield return ["10 8 6 4 3 5"];
+        yield return ["63 62 64 65 66 69 70 72"];
+    }
+
+    [Theory]
+    [MemberData(nameof(UnsuafeRows))]
+    public void Part2_TheesShouldNotBeSafe(string unsafeRow)
     {
         string[] data =
         [
-            "22 25 27 28 30 31 32 29",  // true
-            "72 74 75 77 80 81 81",     // true
-            "52 53 55 58 59 63",        // true
-            "14 17 19 22 27",           // true
-            "65 68 67 68 71 73 76 77",  // false (take 67 away, leaves 68 & 68 together)
-            "53 56 53 55 54",           // false
-            "60 62 59 62 62",           // false
-            "27 30 28 31 32 35 39",     // false
-            // "64 67 68 71 74 71 74 81",  // false
-            // "29 32 32 33 36 39 40",     // true
             // "72 74 74 75 74",           // false
             // "11 14 14 17 17",           // false
             // "64 65 67 70 72 72 76",     // false
@@ -45,7 +58,6 @@ public class RedNosedReportsTests
             // "27 28 34 35 35",           // false
             // "76 77 78 80 85 88 92",     // false
             // "72 74 79 80 81 88",        // false
-            // "63 62 65 66 69 70 72",     // true
             // "87 84 87 89 88",           // false
             // "41 40 42 43 45 46 46",     // false
             // "7 4 7 8 12",               // false
@@ -69,30 +81,19 @@ public class RedNosedReportsTests
             // "32 29 31 34 39 41 44 41",  // false
             // "47 46 48 49 54 57 57",     // false
         ];
-
-        var answer = new RedNosedReports(data).GetAnswerForPart(ChallengePart.Part2);
         
-        Assert.Equal(4, answer);
+        var answer = new RedNosedReports([unsafeRow]).GetAnswerForPart(ChallengePart.Part2);
+        
+        Assert.True(answer == 0);
     }
-
+    
     [Theory]
-    [InlineData("7 6 4 2 1", true)]
-    [InlineData("1 2 7 8 9", false)]
-    [InlineData("9 7 6 2 1", false)]
-    [InlineData("1 3 2 4 5", true)]
-    [InlineData("8 6 4 4 1", true)]
-    [InlineData("1 3 6 7 9", true)]
-    [InlineData("53 56 53 55 54", false)]
-    [InlineData("52 53 55 58 59 63", true)]
-    [InlineData("27 30 28 31 32 35 39", false)]
-    public void IndividualRowPart2(string row, bool isSafe)
+    [MemberData(nameof(SafeRows))]
+    public void Part2_TheesShouldBeSafe(string row)
     {
-        string[] data = [row];
+        var answer = new RedNosedReports([row]).GetAnswerForPart(ChallengePart.Part2);
         
-        var sut = new RedNosedReports(data);
-        var answer = sut.GetAnswerForPart(ChallengePart.Part2);
-
-        Assert.Equal(isSafe, answer == 1);
+        Assert.True(answer == 1);
     }
     
     [Theory]
@@ -100,6 +101,7 @@ public class RedNosedReportsTests
     [InlineData(657)]
     [InlineData(658)]
     [InlineData(659)]
+    [InlineData(660)]
     [InlineData(664)]
     [InlineData(723)]
     [InlineData(857)]
