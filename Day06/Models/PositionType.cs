@@ -1,8 +1,8 @@
-namespace AdventOfCode2024.Day06;
+namespace AdventOfCode2024.Day06.Models;
 
 public enum PositionType
 {
     FreeSpace,
-    Obstable,
+    Obstacle,
     OutsideOfMap
 }

@@ -1,4 +1,4 @@
-namespace AdventOfCode2024.Day06;
+namespace AdventOfCode2024.Day06.Models;
 
 public record Position(int X, int Y)
 {
